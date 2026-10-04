@@ -1,0 +1,8 @@
+plotvalloss_config.json
+plotvalloss_config.json.bak
+plotvalloss_config.json.corrupt
+plotvalloss_config.json.lock
+venv/
+__pycache__/
+.pytest_cache/
+logs/
