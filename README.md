@@ -11,6 +11,8 @@ draws them with Plotly.
 
 Originally part of ImageTools; moved here as its own project.
 
+![PlotValLoss showing validation-loss curves for 42 runs](docs/images/plotvalloss.png)
+
 ## Install
 
 ```
