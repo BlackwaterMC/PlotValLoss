@@ -14,6 +14,14 @@ Originally part of ImageTools; moved here as its own project.
 ## Install
 
 ```
+Install.bat
+```
+
+This creates the git-ignored `venv` folder, installs `requirements.txt` into it, and asks where AI-Toolkit
+lives (saved to `plotvalloss_config.json`). It is safe to re-run: it detects and repairs a partial or broken
+install. Manual equivalent:
+
+```
 python -m venv venv
 venv\Scripts\python.exe -m pip install -r requirements.txt
 ```

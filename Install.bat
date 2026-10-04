@@ -72,7 +72,7 @@ if not exist "%MARKER%" (
 
 echo.
 echo  [OK] Everything is already installed and working. Nothing to do.
-goto :success
+goto :configure_aitk
 
 :: ---- 3. Rebuild a broken venv --------------------------------------------
 :rebuild
@@ -173,6 +173,66 @@ if errorlevel 1 (
     echo  [!] Installed fine, but I couldn't write my "finished" note.
     echo      Harmless - I'll just re-check next time.
 )
+
+:: ---- 8. Tell the app where AI-Toolkit lives ------------------------------
+:configure_aitk
+set "PYTHONPATH=%~dp0"
+if defined AITK_ROOT goto :aitk_done
+"%VENV_PY%" -c "import sys, loss_reader; sys.exit(0 if loss_reader.resolve_aitk_root() else 1)" >nul 2>&1
+if not errorlevel 1 goto :aitk_done
+if /i "%~1"=="/nopause" goto :aitk_skipped
+
+echo.
+echo  ----------------------------------------
+echo   Where is AI-Toolkit?
+echo  ----------------------------------------
+echo  PlotValLoss reads your training runs from AI-Toolkit's "output" folder.
+echo  Enter the AI-Toolkit folder (the one that contains "output"),
+echo  for example  C:\AI-Toolkit
+echo  Or just press Enter to skip - you can set it later.
+:aitk_ask
+echo.
+set "PVL_ROOT="
+set /p "PVL_ROOT=  AI-Toolkit folder: "
+if not defined PVL_ROOT goto :aitk_skipped
+set "PVL_ROOT=%PVL_ROOT:"=%"
+if not exist "%PVL_ROOT%\" goto :aitk_not_found
+if not exist "%PVL_ROOT%\output\" goto :aitk_no_output
+"%VENV_PY%" -c "import os, config_store as c; p = c.config_path_for('plotvalloss'); d = c.load_config(p); d['aitk_root'] = os.environ['PVL_ROOT']; c.save_config(p, d)" >nul 2>&1
+if errorlevel 1 goto :aitk_write_failed
+echo.
+echo  [OK] Saved to plotvalloss_config.json (git-ignored, specific to this PC).
+goto :aitk_done
+
+:aitk_not_found
+echo.
+echo  [!] I can't find that folder. Check the spelling and try again,
+echo      or press Enter to skip.
+goto :aitk_ask
+
+:aitk_no_output
+echo.
+echo  [!] That folder exists, but it has no "output" folder inside it.
+echo      Make sure you gave the AI-Toolkit folder itself, not a sub-folder.
+echo      Try again, or press Enter to skip.
+goto :aitk_ask
+
+:aitk_write_failed
+echo.
+echo  [!] I couldn't save that setting. Not a big deal - you can add it by hand:
+echo      create plotvalloss_config.json in this folder containing
+echo          {"aitk_root": "C:/AI-Toolkit"}
+echo      ^(forward slashes work fine in the path^).
+goto :aitk_done
+
+:aitk_skipped
+echo.
+echo  Skipped. Before using the app, tell it where AI-Toolkit is by either:
+echo    - running Install.bat again, or
+echo    - creating plotvalloss_config.json here with {"aitk_root": "C:/AI-Toolkit"}
+echo    - or setting the AITK_ROOT environment variable.
+
+:aitk_done
 
 :success
 echo.
